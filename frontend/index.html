@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Miku Chess - 初音未来主题棋</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 主菜单 -->
+        <div id="menu-screen" class="screen active">
+            <div class="menu-header">
+                <h1 class="game-title">
+                    <span class="title-miku">MIKU</span>
+                    <span class="title-chess">CHESS</span>
+                </h1>
+                <p class="subtitle">初音未来主题战棋</p>
+            </div>
+            
+            <div class="menu-buttons">
+                <button class="menu-btn btn-local" onclick="startLocalGame()">
+                    <span class="btn-icon">👥</span>
+                    <span class="btn-text">本地对战</span>
+                    <span class="btn-desc">两人同屏轮流操作</span>
+                </button>
+                
+                <button class="menu-btn btn-online" onclick="showOnlineOptions()">
+                    <span class="btn-icon">🌐</span>
+                    <span class="btn-text">在线对战</span>
+                    <span class="btn-desc">与远程好友对战</span>
+                </button>
+                
+                <button class="menu-btn btn-rules" onclick="showRules()">
+                    <span class="btn-icon">📖</span>
+                    <span class="btn-text">游戏规则</span>
+                    <span class="btn-desc">查看详细规则</span>
+                </button>
+            </div>
+            
+            <div class="version-info">v1.0.0</div>
+        </div>
+        
+        <!-- 在线模式选项 -->
+        <div id="online-screen" class="screen">
+            <button class="back-btn" onclick="showMenu()">← 返回</button>
+            
+            <h2 class="screen-title">在线对战</h2>
+            
+            <div class="online-options">
+                <button class="option-btn" onclick="createOnlineGame()">
+                    <span class="btn-icon">➕</span>
+                    <span class="btn-text">创建房间</span>
+                </button>
+                
+                <div class="divider">或</div>
+                
+                <div class="join-section">
+                    <input type="text" id="game-id-input" placeholder="输入房间ID" maxlength="8">
+                    <button class="option-btn btn-join" onclick="joinOnlineGame()">
+                        <span class="btn-text">加入房间</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 等待玩家加入 -->
+        <div id="waiting-screen" class="screen">
+            <h2 class="screen-title">等待对手加入</h2>
+            
+            <div class="waiting-content">
+                <div class="your-team-info">
+                    <span class="team-badge team-red-badge">❤️ 你是红方（先手）</span>
+                </div>
+                
+                <div class="room-info">
+                    <p>房间ID: <span id="room-id-display" class="room-id"></span></p>
+                    <button class="copy-btn" onclick="copyRoomLink()">复制邀请链接</button>
+                </div>
+                
+                <div class="loading-animation">
+                    <div class="spinner"></div>
+                    <p>等待对手连接...</p>
+                </div>
+            </div>
+            
+            <button class="cancel-btn" onclick="cancelWaiting()">取消</button>
+        </div>
+        
+        <!-- 游戏界面 -->
+        <div id="game-screen" class="screen">
+            <!-- 队伍指示器（仅在线模式显示） -->
+            <div id="my-team-indicator" class="my-team-indicator" style="display: none;">
+                <span class="team-icon">❤️</span>
+                <span>你是红方</span>
+            </div>
+            
+            <div class="game-header">
+                <div class="player-info player-blue">
+                    <span class="player-icon">💙</span>
+                    <span class="player-name">蓝方</span>
+                    <span class="turn-indicator" id="blue-turn"></span>
+                </div>
+                
+                <div class="game-info">
+                    <div class="turn-display">
+                        第 <span id="turn-number">1</span> 回合
+                    </div>
+                    <div class="current-player" id="current-player-display">红方行动</div>
+                </div>
+                
+                <div class="player-info player-red">
+                    <span class="turn-indicator" id="red-turn"></span>
+                    <span class="player-name">红方</span>
+                    <span class="player-icon">❤️</span>
+                </div>
+            </div>
+            
+            <div class="game-main">
+                <div class="board-container">
+                    <div id="chess-board" class="chess-board"></div>
+                    
+                    <!-- 列标签 -->
+                    <div class="col-labels">
+                        <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span><span>G</span><span>H</span><span>I</span>
+                    </div>
+                </div>
+                
+                <!-- 行标签 -->
+                <div class="row-labels">
+                    <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
+                </div>
+            </div>
+            
+            <div class="game-status">
+                <div id="magic-status" class="magic-status">
+                    <div class="magic-item blue-magic">
+                        <span class="magic-icon">✨</span>
+                        <span id="blue-magic-status">蓝方魔法阵: 存活</span>
+                    </div>
+                    <div class="magic-item red-magic">
+                        <span class="magic-icon">✨</span>
+                        <span id="red-magic-status">红方魔法阵: 存活</span>
+                    </div>
+                </div>
+                
+                <div class="zone-legend">
+                    <span class="legend-item"><span class="legend-box palace-legend"></span> 将九宫格</span>
+                    <span class="legend-item"><span class="legend-box magic-legend"></span> 法九宫格</span>
+                </div>
+                
+                <div id="special-status" class="special-status"></div>
+            </div>
+            
+            <div class="game-controls">
+                <button class="control-btn" onclick="showGameMenu()">菜单</button>
+                <button class="control-btn" id="skip-btn" onclick="skipSecondMove()" style="display: none;">跳过第二次移动</button>
+            </div>
+        </div>
+        
+        <!-- 游戏菜单弹窗 -->
+        <div id="game-menu-modal" class="modal">
+            <div class="modal-content">
+                <h3>游戏菜单</h3>
+                <button class="modal-btn" onclick="restartGame()">重新开始</button>
+                <button class="modal-btn" onclick="exitGame()">退出游戏</button>
+                <button class="modal-btn" onclick="hideGameMenu()">继续游戏</button>
+            </div>
+        </div>
+        
+        <!-- 游戏结束弹窗 -->
+        <div id="game-over-modal" class="modal">
+            <div class="modal-content">
+                <h3 id="game-over-title">游戏结束</h3>
+                <p id="game-over-message"></p>
+                <button class="modal-btn" onclick="restartGame()">再来一局</button>
+                <button class="modal-btn" onclick="exitGame()">返回主菜单</button>
+            </div>
+        </div>
+        
+        <!-- 规则弹窗 -->
+        <div id="rules-modal" class="modal">
+            <div class="modal-content modal-large">
+                <h3>游戏规则</h3>
+                <div class="rules-content">
+                    <h4>棋盘</h4>
+                    <p>9列×10行，蓝方为上半区(行0-4)，红方为下半区(行5-9)。红方先行。</p>
+                    
+                    <h4>棋子种类</h4>
+                    <ul>
+                        <li><strong>进攻棋 (攻)</strong>: 沿横纵线任意格数，纵向可吃子，横向不能吃子</li>
+                        <li><strong>防守棋 (守)</strong>: 沿横纵线任意格数，横向可吃子，纵向不能吃子</li>
+                        <li><strong>应援棋 (援)</strong>: 沿斜线任意格数，可吃敌方棋子</li>
+                        <li><strong>魔法阵 (法)</strong>: 限中心3×3区域，每步1格，不能吃子</li>
+                        <li><strong>胜点棋 (将)</strong>: 限九宫格内，每步1格，被将死则输</li>
+                    </ul>
+                    
+                    <h4>特殊规则</h4>
+                    <ul>
+                        <li>魔法阵被吃后，该方棋子不能后退</li>
+                        <li>第11回合若蓝方魔法阵存活，蓝区红子不能移动</li>
+                        <li>第11回合若红方魔法阵存活，红区红子可移动两次</li>
+                    </ul>
+                </div>
+                <button class="modal-btn" onclick="hideRules()">关闭</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/js/board.js"></script>
+    <script src="/js/network.js"></script>
+    <script src="/js/game.js"></script>
+</body>
+</html>
+
