@@ -208,6 +208,24 @@ body {
     margin-top: 5px;
 }
 
+/* 右下角GitHub链接 */
+.github-corner-link {
+    position: fixed;
+    bottom: 12px;
+    right: 16px;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.35);
+    text-decoration: none;
+    font-family: 'Noto Sans SC', sans-serif;
+    letter-spacing: 0.5px;
+    transition: color 0.2s ease;
+    z-index: 100;
+}
+
+.github-corner-link:hover {
+    color: rgba(255, 255, 255, 0.6);
+}
+
 .version-info {
     position: fixed;
     bottom: 20px;
@@ -1059,6 +1077,18 @@ body {
     color: var(--bg-dark);
 }
 
+.modal-btn.btn-secondary {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 15px;
+}
+
+.modal-btn.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
 .modal-large {
     max-width: 600px;
     max-height: 80vh;
@@ -1381,6 +1411,12 @@ body {
         position: static;
         margin-top: 30px;
         text-align: center;
+    }
+    
+    .github-corner-link {
+        font-size: 0.7rem;
+        bottom: 8px;
+        right: 12px;
     }
 }
 

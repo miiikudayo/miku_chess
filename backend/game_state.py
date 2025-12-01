@@ -336,9 +336,12 @@ class GameManager:
         
         # 检查将死/和棋
         if game.status == GameStatus.PLAYING:
+            # 获取新回合的冻结位置（针对下一位行动方）
+            next_frozen_positions = self.get_frozen_positions(game)
+            
             if GameLogic.is_checkmate(game.board, game.current_team,
                                       game.blue_magic_alive, game.red_magic_alive,
-                                      game.turn_number):
+                                      game.turn_number, next_frozen_positions):
                 if game.current_team == Team.BLUE:
                     game.status = GameStatus.RED_WIN
                 else:
@@ -346,7 +349,7 @@ class GameManager:
                 result["game_status"] = game.status.value
             elif GameLogic.is_stalemate(game.board, game.current_team,
                                         game.blue_magic_alive, game.red_magic_alive,
-                                        game.turn_number):
+                                        game.turn_number, next_frozen_positions):
                 game.status = GameStatus.DRAW
                 result["game_status"] = game.status.value
         

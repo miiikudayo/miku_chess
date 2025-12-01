@@ -686,6 +686,13 @@ function showGameOver() {
 }
 
 /**
+ * 隐藏游戏结束弹窗（继续查看棋盘）
+ */
+function hideGameOverModal() {
+    document.getElementById('game-over-modal').classList.remove('active');
+}
+
+/**
  * 重新开始游戏
  */
 async function restartGame() {

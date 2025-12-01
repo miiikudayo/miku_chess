@@ -485,9 +485,18 @@ class GameLogic:
         return valid_moves
     
     @staticmethod
-    def is_general_in_check(board: List[List[Optional[Piece]]], team: Team) -> bool:
+    def is_general_in_check(board: List[List[Optional[Piece]]], 
+                            team: Team,
+                            blue_magic_alive: bool = True,
+                            red_magic_alive: bool = True) -> bool:
         """
         检查指定方的胜点棋是否被将军
+        
+        Args:
+            board: 棋盘状态
+            team: 要检查的阵营
+            blue_magic_alive: 蓝方魔法阵是否存活
+            red_magic_alive: 红方魔法阵是否存活
         """
         # 找到胜点棋位置
         general_pos = None
@@ -506,20 +515,33 @@ class GameLogic:
         # 检查对方所有棋子是否能攻击到胜点棋
         enemy_team = Team.RED if team == Team.BLUE else Team.BLUE
         
+        # 判断敌方是否能后退（魔法阵死亡则不能后退）
+        enemy_can_retreat = True
+        if enemy_team == Team.BLUE and not blue_magic_alive:
+            enemy_can_retreat = False
+        elif enemy_team == Team.RED and not red_magic_alive:
+            enemy_can_retreat = False
+        
         for row in range(10):
             for col in range(9):
                 piece = board[row][col]
                 if piece and piece.team == enemy_team:
-                    # 获取该棋子的攻击范围（这里简化处理，检查是否能移动到胜点位置）
-                    # 使用基本移动规则，不考虑魔法状态
+                    pos = (row, col)
+                    # 获取该棋子的攻击范围
                     if piece.piece_type == PieceType.ATTACK:
-                        moves = GameLogic._get_attack_moves(board, (row, col), piece)
+                        moves = GameLogic._get_attack_moves(board, pos, piece)
                     elif piece.piece_type == PieceType.DEFENSE:
-                        moves = GameLogic._get_defense_moves(board, (row, col), piece)
+                        moves = GameLogic._get_defense_moves(board, pos, piece)
                     elif piece.piece_type == PieceType.SUPPORT:
-                        moves = GameLogic._get_support_moves(board, (row, col), piece)
+                        moves = GameLogic._get_support_moves(board, pos, piece)
                     else:
                         continue  # 魔法阵和胜点棋不能吃子
+                    
+                    # 如果敌方魔法阵死亡，需要过滤掉后退移动
+                    if not enemy_can_retreat:
+                        moves = [m for m in moves 
+                                if not is_moving_backward(pos, m, enemy_team) 
+                                and not is_moving_diagonal_backward(pos, m, enemy_team)]
                     
                     if general_pos in moves:
                         return True
@@ -531,32 +553,45 @@ class GameLogic:
                      team: Team,
                      blue_magic_alive: bool,
                      red_magic_alive: bool,
-                     turn_number: int) -> bool:
+                     turn_number: int,
+                     frozen_positions: List[Tuple[int, int]] = None) -> bool:
         """
         检查指定方是否被将死
         将死条件：胜点棋被将军且无法解除
+        
+        Args:
+            board: 棋盘状态
+            team: 要检查的阵营
+            blue_magic_alive: 蓝方魔法阵是否存活
+            red_magic_alive: 红方魔法阵是否存活
+            turn_number: 当前回合数
+            frozen_positions: 被冻结的位置列表（第11回合蓝方魔法效果）
         """
-        if not GameLogic.is_general_in_check(board, team):
+        if frozen_positions is None:
+            frozen_positions = []
+        
+        if not GameLogic.is_general_in_check(board, team, blue_magic_alive, red_magic_alive):
             return False
         
         # 尝试所有可能的移动，看是否能解除将军
-        for row in range(10):
-            for col in range(9):
-                piece = board[row][col]
+        for r in range(10):
+            for c in range(9):
+                piece = board[r][c]
                 if piece and piece.team == team:
                     moves = GameLogic.get_valid_moves(
-                        board, (row, col), team,
-                        blue_magic_alive, red_magic_alive, turn_number
+                        board, (r, c), team,
+                        blue_magic_alive, red_magic_alive, turn_number,
+                        False, frozen_positions
                     )
                     
                     for move_to in moves:
                         # 模拟移动
                         test_board = [row[:] for row in board]
-                        test_board[move_to[0]][move_to[1]] = test_board[row][col]
-                        test_board[row][col] = None
+                        test_board[move_to[0]][move_to[1]] = test_board[r][c]
+                        test_board[r][c] = None
                         
-                        # 检查移动后是否仍被将军
-                        if not GameLogic.is_general_in_check(test_board, team):
+                        # 检查移动后是否仍被将军（考虑魔法状态）
+                        if not GameLogic.is_general_in_check(test_board, team, blue_magic_alive, red_magic_alive):
                             return False
         
         return True
@@ -566,10 +601,22 @@ class GameLogic:
                      team: Team,
                      blue_magic_alive: bool,
                      red_magic_alive: bool,
-                     turn_number: int) -> bool:
+                     turn_number: int,
+                     frozen_positions: List[Tuple[int, int]] = None) -> bool:
         """
         检查是否为和棋（无子可动）
+        
+        Args:
+            board: 棋盘状态
+            team: 要检查的阵营
+            blue_magic_alive: 蓝方魔法阵是否存活
+            red_magic_alive: 红方魔法阵是否存活
+            turn_number: 当前回合数
+            frozen_positions: 被冻结的位置列表（第11回合蓝方魔法效果）
         """
+        if frozen_positions is None:
+            frozen_positions = []
+        
         # 检查该方是否有任何合法移动
         for row in range(10):
             for col in range(9):
@@ -577,7 +624,8 @@ class GameLogic:
                 if piece and piece.team == team:
                     moves = GameLogic.get_valid_moves(
                         board, (row, col), team,
-                        blue_magic_alive, red_magic_alive, turn_number
+                        blue_magic_alive, red_magic_alive, turn_number,
+                        False, frozen_positions
                     )
                     if moves:
                         return False
