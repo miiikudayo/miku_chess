@@ -112,6 +112,12 @@ body {
     text-shadow: 0 0 20px var(--miku-pink), 0 0 40px var(--miku-pink);
 }
 
+.title-cross {
+    color: #ffd700;
+    text-shadow: 0 0 20px #ffd700, 0 0 40px #ffa500;
+    margin: 0 0.1em;
+}
+
 .subtitle {
     font-size: 1.2rem;
     color: var(--text-secondary);
