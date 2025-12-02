@@ -128,75 +128,32 @@ class BoardRenderer {
     }
     
     /**
-     * 获取九宫格边框类型（考虑翻转）
+     * 获取列分隔线类（CD之间和FG之间加粗）
      */
     getPalaceBorderClass(row, col) {
         const classes = [];
-        const [displayRow] = this.toDisplayCoord(row, col);
         
-        // 蓝方将九宫格 (行0-2, 列3-5)
-        if (row >= 0 && row <= 2 && col >= 3 && col <= 5) {
-            // 翻转时边框方向也要翻转
-            if (this.flipped) {
-                if (row === 0) classes.push('palace-bottom');
-                if (row === 2) classes.push('palace-top');
-                if (col === 3) classes.push('palace-right');
-                if (col === 5) classes.push('palace-left');
-            } else {
-                if (row === 0) classes.push('palace-top');
-                if (row === 2) classes.push('palace-bottom');
-                if (col === 3) classes.push('palace-left');
-                if (col === 5) classes.push('palace-right');
+        // CD之间（列3左边框）和FG之间（列6左边框）加粗
+        // 需要考虑翻转：翻转时逻辑列3显示在右侧，逻辑列6显示在左侧
+        if (this.flipped) {
+            // 翻转时：逻辑列3和列6的右边框需要加粗
+            // 但实际上我们用逻辑坐标，所以还是在逻辑列3和列6添加类
+            // 显示时逻辑列3 -> 显示列5，逻辑列6 -> 显示列2
+            // 所以我们需要在显示坐标的列3和列6处添加左边框
+            // 翻转后：显示列3 = 逻辑列5，显示列6 = 逻辑列2
+            // 不对，我们需要保持视觉效果一致，即CD和FG之间有分隔线
+            // 翻转后列顺序是 I H G F E D C B A
+            // 所以显示列3对应逻辑列5（F），显示列6对应逻辑列2（C）
+            // 那么CD之间在显示时是列5和列6之间，需要在显示列6加左边框 -> 逻辑列2
+            // FG之间在显示时是列2和列3之间，需要在显示列3加左边框 -> 逻辑列5
+            if (col === 5 || col === 2) {
+                classes.push('col-separator-left');
             }
-            classes.push('general-palace', 'blue-general-palace');
-        }
-        
-        // 红方将九宫格 (行7-9, 列3-5)
-        if (row >= 7 && row <= 9 && col >= 3 && col <= 5) {
-            if (this.flipped) {
-                if (row === 7) classes.push('palace-bottom');
-                if (row === 9) classes.push('palace-top');
-                if (col === 3) classes.push('palace-right');
-                if (col === 5) classes.push('palace-left');
-            } else {
-                if (row === 7) classes.push('palace-top');
-                if (row === 9) classes.push('palace-bottom');
-                if (col === 3) classes.push('palace-left');
-                if (col === 5) classes.push('palace-right');
+        } else {
+            // 正常情况：列3(D列)和列6(G列)的左边框加粗
+            if (col === 3 || col === 6) {
+                classes.push('col-separator-left');
             }
-            classes.push('general-palace', 'red-general-palace');
-        }
-        
-        // 蓝方魔法九宫格 (行2-4, 列3-5)
-        if (row >= 2 && row <= 4 && col >= 3 && col <= 5) {
-            if (this.flipped) {
-                if (row === 2) classes.push('magic-zone-bottom');
-                if (row === 4) classes.push('magic-zone-top');
-                if (col === 3) classes.push('magic-zone-right');
-                if (col === 5) classes.push('magic-zone-left');
-            } else {
-                if (row === 2) classes.push('magic-zone-top');
-                if (row === 4) classes.push('magic-zone-bottom');
-                if (col === 3) classes.push('magic-zone-left');
-                if (col === 5) classes.push('magic-zone-right');
-            }
-            classes.push('magic-zone', 'blue-magic-zone');
-        }
-        
-        // 红方魔法九宫格 (行5-7, 列3-5)
-        if (row >= 5 && row <= 7 && col >= 3 && col <= 5) {
-            if (this.flipped) {
-                if (row === 5) classes.push('magic-zone-bottom');
-                if (row === 7) classes.push('magic-zone-top');
-                if (col === 3) classes.push('magic-zone-right');
-                if (col === 5) classes.push('magic-zone-left');
-            } else {
-                if (row === 5) classes.push('magic-zone-top');
-                if (row === 7) classes.push('magic-zone-bottom');
-                if (col === 3) classes.push('magic-zone-left');
-                if (col === 5) classes.push('magic-zone-right');
-            }
-            classes.push('magic-zone', 'red-magic-zone');
         }
         
         return classes;

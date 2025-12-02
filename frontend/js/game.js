@@ -174,8 +174,8 @@ function showJoinNotification(team) {
     const notification = document.createElement('div');
     notification.className = `join-notification ${team === 'blue' ? 'team-blue' : 'team-red'}`;
     notification.innerHTML = team === 'blue' ? 
-        '<span>💙 你已加入游戏，执蓝方棋子</span>' : 
-        '<span>❤️ 你已加入游戏，执红方棋子</span>';
+        '<span> 你已加入游戏，执蓝方棋子</span>' : 
+        '<span> 你已加入游戏，执红方棋子</span>';
     document.body.appendChild(notification);
     
     // 3秒后移除
@@ -315,10 +315,10 @@ function updateTeamIndicator() {
             indicator.style.display = 'block';
             if (myTeam === 'red') {
                 indicator.className = 'my-team-indicator team-red';
-                indicator.innerHTML = '<span class="team-icon">❤️</span><span>你是红方</span>';
+                indicator.innerHTML = '<span class="team-icon">〇</span> <span>你是红方</span>';
             } else {
                 indicator.className = 'my-team-indicator team-blue';
-                indicator.innerHTML = '<span class="team-icon">💙</span><span>你是蓝方</span>';
+                indicator.innerHTML = '<span class="team-icon">〇</span> <span>你是蓝方</span>';
             }
         } else {
             indicator.style.display = 'none';
