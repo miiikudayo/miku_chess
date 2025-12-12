@@ -293,9 +293,8 @@ class GameLogic:
                 return []
         
         # 第11回合红方第二次移动时的限制
-        # 只有当蓝方魔法阵存活时，在蓝色区域的棋子才不能进行第二次移动
-        # 如果蓝方魔法阵已死亡，即使在蓝色区域也可以进行第二次移动
-        if is_second_move and is_in_blue_zone(row) and blue_magic_alive:
+        # 第二次移动只能由红色区域内的棋子进行（因为只有第一次移动后仍在红色区域才能触发第二次移动）
+        if is_second_move and not is_in_red_zone(row):
             return []
         
         return valid_moves

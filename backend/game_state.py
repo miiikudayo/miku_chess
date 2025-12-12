@@ -295,26 +295,14 @@ class GameManager:
                 if is_in_red_zone(from_row):
                     # 检查移动后是否还在红色区域
                     if is_in_red_zone(to_row):
-                        # 仍在红色区域，可以进行第二次移动
+                        # 仍在红色区域，可以进行第二次移动（无论蓝方是否发动了魔法）
                         game.red_double_move_active = True
                         game.red_first_move_done = True
                         game.red_first_move_pos = move.to_pos
                         result["double_move"] = True
                         result["waiting_second_move"] = True
                         return result
-                    else:
-                        # 移动到蓝色区域
-                        if game.blue_magic_alive:
-                            # 蓝方魔法阵存活，进入蓝方区域后不能进行第二次移动
-                            pass
-                        else:
-                            # 蓝方魔法阵已死亡，即使进入蓝方区域也可以进行第二次移动
-                            game.red_double_move_active = True
-                            game.red_first_move_done = True
-                            game.red_first_move_pos = move.to_pos
-                            result["double_move"] = True
-                            result["waiting_second_move"] = True
-                            return result
+                    # 移动到蓝色区域，不能进行第二次移动
                 # 从蓝色区域移动，只能移动一次
             else:
                 # 第二次移动完成
